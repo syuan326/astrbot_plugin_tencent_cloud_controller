@@ -1,0 +1,6 @@
+name: astrbot_plugin_tencent_cloud_controller
+display_name: 腾讯云DNS解析控制器
+version: v1.0.0
+author: Syuan
+desc: 一个用于管理腾讯云DNS解析记录的插件。支持指令与LLM工具。
+repo: https://github.com/syuan326/astrbot_plugin_tencent_cloud_controller

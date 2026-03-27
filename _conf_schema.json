@@ -1,0 +1,34 @@
+{
+  "secret_id": {
+    "description": "腾讯云 SecretId",
+    "type": "string",
+    "hint": "在腾讯云[访问管理控制台](https://console.cloud.tencent.com/cam/capi)获取的 API 密钥 ID。",
+    "default": "",
+    "obvious_hint": true
+  },
+  "secret_key": {
+    "description": "腾讯云 SecretKey",
+    "type": "string",
+    "hint": "腾讯云 API 密钥 Key。请妥善保管，切勿泄露给他人。",
+    "default": "",
+    "obvious_hint": true
+  },
+  "domain": {
+    "description": "待管理的域名",
+    "type": "string",
+    "hint": "例如: example.com。请确保该域名已托管在 DNSPod 中。",
+    "default": ""
+  },
+  "disable_tool": {
+    "description": "禁用 LLM 函数调用",
+    "type": "bool",
+    "hint": "如果开启（设置为 true），机器人将只支持指令操作，不再向大模型暴露 DNS 管理工具（Function Calling）。",
+    "default": false
+  },
+  "timeout": {
+    "description": "请求超时时间",
+    "type": "int",
+    "hint": "调用腾讯云 API 的超时时间（秒）。",
+    "default": 10
+  }
+}
