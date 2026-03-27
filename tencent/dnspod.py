@@ -23,6 +23,7 @@ class DNSPodClient(tencent_cloud_client):
 
     @staticmethod
     def _extract_error_message(resp: Dict[str, Any]) -> Optional[str]:
+        
         err = resp.get("Error")
         if not err:
             return None
@@ -33,6 +34,7 @@ class DNSPodClient(tencent_cloud_client):
 
     @staticmethod
     def _format_record_line(r: Dict[str, Any]) -> str:
+        """ 格式化解析记录信息为一行文本 """
         return (
             f"ID:{r.get('RecordId')} | {r.get('Name')} | {r.get('Type')} | "
             f"{r.get('Value')} | {r.get('Status')} | {r.get('RecordLine')}"
@@ -60,6 +62,7 @@ class DNSPodClient(tencent_cloud_client):
         return res_str
 
     async def get_records_by_subdomain(self, sub_domain: str, record_type: str = "") -> str:
+        """ 根据子域名和记录类型查询解析记录。当存在多条匹配记录时会返回提示信息，避免误操作。 """
         records, err = await self._list_records_raw()
         if err:
             return err
@@ -87,6 +90,7 @@ class DNSPodClient(tencent_cloud_client):
         return res
 
     async def modify_record_by_subdomain(self, sub_domain: str, record_type: str, value: str) -> str:
+        """ 根据子域名和记录类型修改解析记录。当存在多条匹配记录时会返回提示信息，避免误改。 """
         records, err = await self._list_records_raw()
         if err:
             return err
@@ -138,6 +142,7 @@ class DNSPodClient(tencent_cloud_client):
         return f"解析记录已修改：{self._format_record_line({**target, 'Value': value})}"
 
     async def delete_record_by_subdomain(self, sub_domain: str, record_type: str = "") -> str:
+        """ 根据子域名和记录类型删除解析记录。当存在多条匹配记录时会返回提示信息，避免误删。 """
         records, err = await self._list_records_raw()
         if err:
             return err
@@ -168,6 +173,7 @@ class DNSPodClient(tencent_cloud_client):
         return await self.delete_record(record_id)
 
     async def add_record(self, sub_domain: str, record_type: str, value: str, line: str = "默认") -> str:
+        """ 添加新的域名解析记录。record_type 如 A、CNAME 等，line 如 "默认"、"电信" 等（可选）。 """
         resp = await self.request(
             "CreateRecord",
             payload_dict={
@@ -188,6 +194,7 @@ class DNSPodClient(tencent_cloud_client):
     async def modify_record(
         self, record_id: int, sub_domain: str, record_type: str, value: str, line: str = "默认"
     ) -> str:
+        """ 根据记录 ID 修改解析记录。record_id 可通过 /dns_list 查询获得 """
         resp = await self.request(
             "ModifyRecord",
             payload_dict={
@@ -207,6 +214,7 @@ class DNSPodClient(tencent_cloud_client):
         return f"解析记录 {record_id} 修改成功！"
 
     async def delete_record(self, record_id: int) -> str:
+        """ 根据记录 ID 删除解析记录。record_id 可通过 /dns_list 查询获得 """
         resp = await self.request(
             "DeleteRecord",
             payload_dict={

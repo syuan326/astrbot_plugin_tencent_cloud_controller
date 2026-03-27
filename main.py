@@ -66,7 +66,7 @@ class TencentDNSPlugin(Star):
             return
 
         try:
-
+            # 使用类方法获取原始记录列表
             records, err = await self.dnspod_client._list_records_raw()
             if err:
                 yield event.plain_result(f"获取解析记录失败: {err}")
@@ -105,6 +105,7 @@ class TencentDNSPlugin(Star):
             return
 
         try:
+            # 使用类方法添加记录
             res = await self.dnspod_client.add_record(
                 sub_domain, record_type.upper(), value, record_line
             )
@@ -125,14 +126,14 @@ class TencentDNSPlugin(Star):
             return
 
         try:
-
+            # 使用类方法删除记录
             res = await self.dnspod_client.delete_record(record_id)
             yield event.plain_result(f"✅ {res}")
         except Exception as e:
             logger.error(f"删除解析记录失败: {e}")
             yield event.plain_result(f"❌ 删除记录失败：{str(e)}")
 
-    # --- LLM Tool 注册 ---
+    # LLM Tool 注册
 
     @filter.permission_type(filter.PermissionType.ADMIN)
     @filter.llm_tool(name="get_dns_records")

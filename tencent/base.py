@@ -9,7 +9,7 @@ from typing import Optional, Dict, Any, Tuple
 
 class tencent_cloud_client:
     """
-    腾讯云API客户端基类。
+    腾讯云API客户端基类。改写自官方demo
     """
     service = ""
     host = ""
@@ -33,25 +33,26 @@ class tencent_cloud_client:
         self._timeout_value = timeout
         self._timeout = aiohttp.ClientTimeout(total=timeout)
 
-        # 如果外部传了 session，则不由本类负责关闭
+        # 如果外部传了session，则不由本类负责关闭
         self._session: Optional[aiohttp.ClientSession] = session
         self._owns_session = session is None
 
         self._connector_limit = connector_limit
         self._connector_limit_per_host = connector_limit_per_host
 
-    # ===== 注入凭证 =====
+
     def set_credentials(self, secret_id: str, secret_key: str, access_token: str = "") -> None:
+        """ 注入腾讯云 API 凭证 """
         self.secret_id = secret_id
         self.secret_key = secret_key
         self.token = access_token or ""
 
-    # ===== 内部签名函数 =====
     @staticmethod
     def _sign(key: bytes, msg: str) -> bytes:
+        """ 使用 HMAC-SHA256 进行签名 """
         return hmac.new(key, msg.encode("utf-8"), hashlib.sha256).digest()
 
-    # ===== aiohttp的session示例 =====
+    
     async def init_session(self) -> aiohttp.ClientSession:
         """
         初始化或复用 aiohttp ClientSession
@@ -81,13 +82,13 @@ class tencent_cloud_client:
 
     @classmethod
     async def close_session(cls):
-        """新增：类方法，无需实例即可关闭会话"""
+        """关闭会话"""
         if cls._shared_session and not cls._shared_session.closed:
             await cls._shared_session.close()
             cls._shared_session = None
 
 
-    # ===== 构造签名 =====
+
     def _build_authorization(
         self,
         action: str,
@@ -95,6 +96,7 @@ class tencent_cloud_client:
         region: str = "",
         timestamp: Optional[int] = None,
     ) -> Tuple[Dict[str, str], bytes]:
+        """ 构造腾讯云API请求的签名和头部"""
         if not self.secret_id or not self.secret_key:
             raise ValueError("请先调用 set_credentials() 注入 secret_id / secret_key")
 
@@ -168,13 +170,13 @@ class tencent_cloud_client:
 
         return headers, payload.encode("utf-8")
 
-    # HTTP调用函数
     async def request(
         self,
         action: str,
         payload_dict: Optional[Dict[str, Any]] = None,
         region: str = "",
     ) -> Dict[str, Any]:
+        """主请求方法，供子类调用"""
         payload_dict = payload_dict or {}
         payload = json.dumps(payload_dict, separators=(",", ":"), ensure_ascii=False)
 
@@ -204,7 +206,7 @@ class tencent_cloud_client:
                 # 直接提取Response节点
                 response_data = full_data.get("Response", {})
 
-                # 处理状态码非 200 但没给 JSON Error 的异常情况
+                # 处理状态码非 200 但没给JSON Error的异常情况
                 if status_code != 200 and "Error" not in response_data:
                     response_data["Error"] = {
                         "Code": f"Client.HttpError.{status_code}",
@@ -214,7 +216,7 @@ class tencent_cloud_client:
                 return response_data
 
         except aiohttp.ClientError as e:
-            # 捕获物理层错误（断网、DNS失败等）
+            # 捕获断网、DNS失败等错误
             return {
                 "Error": {"Code": "Client.NetworkError", "Message": str(e)},
                 "RequestId": "N/A"
