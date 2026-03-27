@@ -8,7 +8,6 @@ from astrbot.api.star import Context, Star
 from .tencent.dnspod import DNSPodClient
 
 
-
 class TencentDNSPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)

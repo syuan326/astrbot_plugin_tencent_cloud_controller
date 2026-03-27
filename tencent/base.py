@@ -11,6 +11,7 @@ class tencent_cloud_client:
     """
     腾讯云API客户端基类。改写自官方demo
     """
+
     service = ""
     host = ""
     version = ""
@@ -40,24 +41,27 @@ class tencent_cloud_client:
         self._connector_limit = connector_limit
         self._connector_limit_per_host = connector_limit_per_host
 
-
-    def set_credentials(self, secret_id: str, secret_key: str, access_token: str = "") -> None:
-        """ 注入腾讯云 API 凭证 """
+    def set_credentials(
+        self, secret_id: str, secret_key: str, access_token: str = ""
+    ) -> None:
+        """注入腾讯云 API 凭证"""
         self.secret_id = secret_id
         self.secret_key = secret_key
         self.token = access_token or ""
 
     @staticmethod
     def _sign(key: bytes, msg: str) -> bytes:
-        """ 使用 HMAC-SHA256 进行签名 """
+        """使用 HMAC-SHA256 进行签名"""
         return hmac.new(key, msg.encode("utf-8"), hashlib.sha256).digest()
 
-    
     async def init_session(self) -> aiohttp.ClientSession:
         """
         初始化或复用 aiohttp ClientSession
         """
-        if tencent_cloud_client._shared_session is None or tencent_cloud_client._shared_session.closed:
+        if (
+            tencent_cloud_client._shared_session is None
+            or tencent_cloud_client._shared_session.closed
+        ):
             connector = aiohttp.TCPConnector(
                 limit=self._connector_limit,
                 limit_per_host=self._connector_limit_per_host,
@@ -77,7 +81,11 @@ class tencent_cloud_client:
         """
         主动关闭内部 session
         """
-        if self._owns_session and self._shared_session and not self._shared_session.closed:
+        if (
+            self._owns_session
+            and self._shared_session
+            and not self._shared_session.closed
+        ):
             await self._shared_session.close()
 
     @classmethod
@@ -87,8 +95,6 @@ class tencent_cloud_client:
             await cls._shared_session.close()
             cls._shared_session = None
 
-
-
     def _build_authorization(
         self,
         action: str,
@@ -96,7 +102,7 @@ class tencent_cloud_client:
         region: str = "",
         timestamp: Optional[int] = None,
     ) -> Tuple[Dict[str, str], bytes]:
-        """ 构造腾讯云API请求的签名和头部"""
+        """构造腾讯云API请求的签名和头部"""
         if not self.secret_id or not self.secret_key:
             raise ValueError("请先调用 set_credentials() 注入 secret_id / secret_key")
 
@@ -126,7 +132,9 @@ class tencent_cloud_client:
 
         # String to Sign
         credential_scope = f"{date}/{self.service}/tc3_request"
-        hashed_canonical_request = hashlib.sha256(canonical_request.encode("utf-8")).hexdigest()
+        hashed_canonical_request = hashlib.sha256(
+            canonical_request.encode("utf-8")
+        ).hexdigest()
 
         string_to_sign = (
             f"{self.algorithm}\n"
@@ -140,9 +148,7 @@ class tencent_cloud_client:
         secret_service = self._sign(secret_date, self.service)
         secret_signing = self._sign(secret_service, "tc3_request")
         signature = hmac.new(
-            secret_signing,
-            string_to_sign.encode("utf-8"),
-            hashlib.sha256
+            secret_signing, string_to_sign.encode("utf-8"), hashlib.sha256
         ).hexdigest()
 
         # Authorization
@@ -193,14 +199,17 @@ class tencent_cloud_client:
             async with session.post(endpoint, headers=headers, data=body) as resp:
                 status_code = resp.status
                 text = await resp.text()
-                
+
                 # 解析 JSON
                 try:
                     full_data = json.loads(text)
                 except json.JSONDecodeError:
                     return {
-                        "Error": {"Code": "Client.JsonDecodeError", "Message": f"非JSON响应: {text[:100]}"},
-                        "RequestId": "N/A"
+                        "Error": {
+                            "Code": "Client.JsonDecodeError",
+                            "Message": f"非JSON响应: {text[:100]}",
+                        },
+                        "RequestId": "N/A",
                     }
 
                 # 直接提取Response节点
@@ -210,7 +219,7 @@ class tencent_cloud_client:
                 if status_code != 200 and "Error" not in response_data:
                     response_data["Error"] = {
                         "Code": f"Client.HttpError.{status_code}",
-                        "Message": "HTTP请求未被正确处理"
+                        "Message": "HTTP请求未被正确处理",
                     }
 
                 return response_data
@@ -219,5 +228,5 @@ class tencent_cloud_client:
             # 捕获断网、DNS失败等错误
             return {
                 "Error": {"Code": "Client.NetworkError", "Message": str(e)},
-                "RequestId": "N/A"
+                "RequestId": "N/A",
             }
