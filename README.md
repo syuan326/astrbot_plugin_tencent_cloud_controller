@@ -12,17 +12,10 @@ astrbot_plugin_tencent_cloud_controller/
 ├── metadata.yaml            # 插件元数据
 ├── _conf_schema.json        # 配置schema定义
 ├── requirements.txt         # 依赖清单
-├── command/                 # 指令模块
-│   ├── __init__.py
-│   ├── dns_command.py      # DNS指令处理
-│   ├── dns_tool.py         # LLM工具定义
-│   └── plugin_help.py      # 帮助文本
-├── tencent/                # 腾讯云相关模块
-│   ├── __init__.py
-│   ├── base.py             # 基础类和方法
-│   └── dnspod.py           # DNSPod API客户端
-└── resources/              # 资源文件
-    └── readme/             # 文档和README
+└── tencent/                # 腾讯云相关模块
+    ├── __init__.py
+    ├── base.py             # 基础类和方法
+    └── dnspod.py           # DNSPod API客户端
 ```
 
 
@@ -41,10 +34,10 @@ git clone https://github.com/syuan326/astrbot_plugin_tencent_cloud_controller.gi
    2. 坚持用主账号的权限也行
 3. 新建秘钥并保存
 4. 进入AstrBot本插件的插件配置文件中填写
-5. 点击保存并发送命令/txy ping检查配置是否正确
+5. 点击保存
 
 ---
 
 ## 开发
 
-本插件的主逻辑均由腾讯云API基类以及子类实现，理论上可以接入阿里云等的HTTP API，记得用aiohttp
+本插件的主逻辑均由腾讯云API基类以及子类实现，理论上可以接入阿里云等的HTTP API
