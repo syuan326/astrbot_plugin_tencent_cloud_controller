@@ -86,13 +86,6 @@ class tencent_cloud_client:
             await cls._shared_session.close()
             cls._shared_session = None
 
-    # ===== 支持 async with =====
-    async def __aenter__(self):
-        await self.init_session()
-        return self
-
-    async def __aexit__(self, exc_type, exc, tb):
-        await self.close()
 
     # ===== 构造签名 =====
     def _build_authorization(
